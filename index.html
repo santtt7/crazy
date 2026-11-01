@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>历史人物人格测试</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Microsoft YaHei", sans-serif; }
+    body { background-color: #f4f1ea; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .container { background-color: #fff; width: 100%; max-width: 500px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); overflow: hidden; }
+    .header { background: #8b4513; color: white; padding: 20px; text-align: center; font-size: 20px; font-weight: bold; letter-spacing: 2px; }
+    .content { padding: 30px 20px; }
+    .hidden { display: none !important; }
+    .btn { display: block; width: 100%; padding: 15px; background: #d2691e; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; margin-top: 20px; font-weight: bold; }
+    .btn:hover { background: #b55512; }
+    .option { display: block; width: 100%; padding: 15px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 12px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 15px; line-height: 1.5;}
+    .option:hover { background: #f0e6d2; border-color: #d2691e; }
+    .question-title { font-size: 18px; margin-bottom: 20px; font-weight: bold; line-height: 1.5; }
+    .progress { text-align: center; color: #888; margin-bottom: 15px; font-size: 14px; }
+    .result-title { font-size: 24px; color: #8b4513; text-align: center; margin-bottom: 10px; font-weight: bold; }
+    .result-desc { font-size: 15px; line-height: 1.6; color: #555; margin-bottom: 20px; text-align: justify; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">历史人物人格测试</div>
+    <div class="content">
+        <!-- 开始页面 -->
+        <div id="start-screen">
+            <p style="text-align: center; line-height: 1.6; margin-bottom: 20px; color: #666;">如果你穿越回古代，面对天下大势、用人决策，你会如何选择？<br>测一测你最像哪位历史人物。</p>
+            <button class="btn" onclick="startQuiz()">开始答题</button>
+        </div>
+
+        <!-- 答题页面 -->
+        <div id="quiz-screen" class="hidden">
+            <div class="progress" id="progress">1 / 10</div>
+            <div class="question-title" id="question-text">题目加载中...</div>
+            <div id="options-container"></div>
+        </div>
+
+        <!-- 结果页面 -->
+        <div id="result-screen" class="hidden">
+            <div class="result-title" id="result-name">人物</div>
+            <div class="result-desc" id="result-desc">解析</div>
+            <button class="btn" onclick="location.reload()">再测一次</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 10道完整的测试题
+    const questions = [
+        {
+            q: "1. 面对团队的重大危机，你的第一反应是？",
+            options: [
+                { text: "A. 沉着冷静，迅速制定周密计划", score: { zgl: 1, cc: 0, lby: 0, zet: 0 } },
+                { text: "B. 险中求胜，用大胆的策略破局", score: { zgl: 0, cc: 1, lby: 0, zet: 0 } },
+                { text: "C. 顺其自然，大不了重头再来", score: { zgl: 0, cc: 0, lby: 1, zet: 0 } },
+                { text: "D. 先保全自己，暗中观察局势", score: { zgl: 0, cc: 0, lby: 0, zet: 1 } }
+            ]
+        },
+        {
+            q: "2. 在用人方面，你更看重什么？",
+            options: [
+                { text: "A. 忠诚与人品，德才兼备", score: { zgl: 1, cc: 0, lby: 0, zet: 0 } },
+                { text: "B. 唯才是举，能帮我打赢就行", score: { zgl: 0, cc: 1, lby: 0, zet: 0 } },
+                { text: "C. 有趣且志同道合，聊得来最重要", score: { zgl: 0, cc: 0, lby: 1, zet: 0 } },
+                { text: "D. 听话照做，不惹麻烦的", score: { zgl: 0, cc: 0, lby: 0, zet: 1 } }
+            ]
+        },
+        {
+            q: "3. 你更向往哪种生活状态？",
+            options: [
+                { text: "A. 鞠躬尽瘁，为了理想奋斗终身", score: { zgl: 1, cc: 0, lby: 0, zet: 0 } },
+                { text: "B. 大权在握，按自己的规则来", score: { zgl: 0, cc: 1, lby: 0, zet: 0 } },
+                { text: "C. 浪迹天涯，自由自在无拘无束", score: { zgl: 0, cc: 0, lby: 1, zet: 0 } },
+                { text: "D. 安稳度日，步步为营向上爬", score: { zgl: 0, cc: 0, lby: 0, zet: 1 } }
+            ]
+        },
+        {
+            q: "4. 如果遭遇了严重的背叛，你会？",
+            options: [
+                { text: "A. 伤心难过，但为了大局选择原谅", score: { zgl: 1, cc: 0, lby: 0, zet: 0 } },
+                { text: "B. 杀伐果断，立刻展开最狠的报复", score: { zgl: 0, cc: 1, lby: 0, zet: 0 } },
+                { text: "C. 挥剑斩情丝，从此相忘于江湖", score: { zgl: 0, cc: 0, lby: 1, zet: 0 } },
+                { text: "D. 表面不动声色，暗中搜集把柄", score: { zgl: 0, cc: 0, lby: 0, zet: 1 } }
+            ]
+        },
+        {
+            q: "5. 对于世俗的规矩和礼仪，你的态度是？",
+            options: [
+                { text: "A. 必须严格遵守，这是立身之本", score: { zgl: 1, cc: 0, lby: 0, zet: 0 } },
+                { text: "B. 规矩是死的，人是活的，随时打破", score: { zgl: 0, cc: 1, lby: 0, zet: 0 } },
+                { text: "C. 只要不限制我的自由，无所谓", score: { zgl: 0, cc: 0, lby: 1, zet: 0 } },
+                { text: "D. 表面遵守，心里有另一套算盘", score: { zgl: 0, cc: 0, lby: 0, zet: 1 } }
+            ]
+        },
+        {
+            q: "6. 别人夸赞你时，你心里最真实的感受是？",
+            options: [
+                { text: "A. 感到欣慰，觉得努力得到了认可", score: { zgl: 1, cc: 0, lby: 0, zet: 0 } },
+                { text: "B. 觉得对方在拍马屁，或者有求于我", score: { zgl: 0, cc: 1, lby: 0, zet: 0 } },
+                { text: "C. 觉得他很懂我，想拉着他一起喝酒", score: { zgl: 0, cc: 0, lby: 1, zet: 0 } },
+                { text: "D. 表面客气，心中冷笑并提高警惕", score: { zgl: 0, cc: 0, lby: 0, zet: 1 } }
+            ]
+        },
+        {
+            q: "7. 如果为了达成伟大目标需要牺牲少部分人，你会？",
+            options: [
+                { text: "A. 极不情愿，尽量寻找两全其美的办法", score: { zgl: 1, cc: 0, lby: 0, zet: 0 } },
+                { text: "B. 毫不犹豫，成大事者不拘小节", score: { zgl: 0, cc: 1, lby: 0, zet: 0 } },
+                { text: "C. 放弃这个目标，不如喝酒快活去", score: { zgl: 0, cc: 0, lby: 1, zet: 0 } },
+                { text: "D. 算计好代价，确保自己是最后赢家", score: { zgl: 0, cc: 0, lby: 0, zet: 1 } }
+            ]
+        },
+        {
+            q: "8. 面对自己不擅长的事情，你会？",
+            options: [
+                { text: "A. 勤加练习，绝不暴露自己的短板", score: { zgl: 1, cc: 0, lby: 0, zet: 0 } },
+                { text: "B. 花钱雇个专业的人替我干", score: { zgl: 0, cc: 1, lby: 0, zet: 0 } },
+                { text: "C. 直接放弃，这辈子都不碰了", score: { zgl: 0, cc: 0, lby: 1, zet: 0 } },
+                { text: "D. 假装自己很懂，用气场糊弄过去", score: { zgl: 0, cc: 0, lby: 0, zet: 1 } }
+            ]
+        },
+        {
+            q: "9. 如果有一天你大权在握，你第一件事会做？",
+            options: [
+                { text: "A. 整顿风气，颁布仁政造福百姓", score: { zgl: 1, cc: 0, lby: 0, zet: 0 } },
+                { text: "B. 排除异己，把所有敌人都除掉", score: { zgl: 0, cc: 1, lby: 0, zet: 0 } },
+                { text: "C. 大赦天下，办个三天三夜的派对", score: { zgl: 0, cc: 0, lby: 1, zet: 0 } },
+                { text: "D. 先摸清国库，把钱揣进自己口袋", score: { zgl: 0, cc: 0, lby: 0, zet: 1 } }
+            ]
+        },
+        {
+            q: "10. 最后一题，你觉得自己更像哪种动物？",
+            options: [
+                { text: "A. 牛：勤恳踏实，任劳任怨", score: { zgl: 1, cc: 0, lby: 0, zet: 0 } },
+                { text: "B. 狼：极具野心，群体作战", score: { zgl: 0, cc: 1, lby: 0, zet: 0 } },
+                { text: "C. 鹰：无拘无束，向往远方", score: { zgl: 0, cc: 0, lby: 1, zet: 0 } },
+                { text: "D. 蛇：冷静敏锐，蛰伏待发", score: { zgl: 0, cc: 0, lby: 0, zet: 1 } }
+            ]
+        }
+    ];
+
+    // 4种人格结果
+    const results = {
+        zgl: {
+            name: "诸葛亮",
+            desc: "你是一个深思熟虑、责任感极强的人。就像卧龙先生一样，你做事严谨，注重规划与道德底线。在团队中，你是那个值得信赖的定海神针，即使面对巨大的压力，也能保持冷静，为了长远的目标默默奉献。"
+        },
+        cc: {
+            name: "曹操",
+            desc: "你是一个极具魄力、务实且野心勃勃的人。你拥有像曹孟德一样的枭雄气质，不拘泥于世俗常规，善于抓住机会。你不在乎繁文缛节，更看重实际结果，拥有强大的领导力，敢于在乱局中开辟属于自己的天地。"
+        },
+        lby: {
+            name: "李白",
+            desc: "你是一个向往自由、浪漫且不拘小节的人。你的灵魂里住着一位诗仙，讨厌被条条框框束缚。你充满创造力，在人际交往中极具个人魅力，你追求的是人生的快意与洒脱，比起功名利禄，你更在乎精神世界的满足。"
+        },
+        zet: {
+            name: "司马懿",
+            desc: "你是一个极其隐忍、极具洞察力的人。你拥有常人难以企及的耐心，擅长在暗中观察局势。你做事步步为营，绝不会轻易暴露自己的底牌。你坚信笑到最后的才是赢家，能在极其复杂的环境中保全自己并最终达成目标。"
+        }
+    };
+
+    let currentQuestion = 0;
+    let scores = { zgl: 0, cc: 0, lby: 0, zet: 0 };
+
+    function startQuiz() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        showQuestion();
+    }
+
+    function showQuestion() {
+        if (currentQuestion >= questions.length) {
+            showResult();
+            return;
+        }
+
+        const qData = questions[currentQuestion];
+        document.getElementById('progress').innerText = `${currentQuestion + 1} / ${questions.length}`;
+        document.getElementById('question-text').innerText = qData.q;
+
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        qData.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option';
+            btn.innerText = opt.text;
+            btn.onclick = () => selectOption(opt.score);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function selectOption(score) {
+        for (let key in score) {
+            scores[key] += score[key];
+        }
+        currentQuestion++;
+        showQuestion();
+    }
+
+    function showResult() {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        // 计算最高分
+        let maxKey = 'zgl';
+        let maxScore = -1;
+        for (let key in scores) {
+            if (scores[key] > maxScore) {
+                maxScore = scores[key];
+                maxKey = key;
+            }
+        }
+
+        document.getElementById('result-name').innerText = "你是：" + results[maxKey].name;
+        document.getElementById('result-desc').innerText = results[maxKey].desc;
+    }
+</script>
+
+</body>
+</html>
